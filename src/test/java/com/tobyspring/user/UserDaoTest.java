@@ -26,10 +26,6 @@ class UserDaoTest {
         this.user1 = new User("hwany1", "정유환1", "1234");
         this.user2 = new User("hwany2", "정유환2", "1234");
         this.user3 = new User("hwany3", "정유환3", "1234");
-        System.out.println("dao = " + dao);
-        System.out.println("user1 = " + user1);
-        System.out.println("user2 = " + user2);
-        System.out.println("user3 = " + user3);
     }
 
     @Test

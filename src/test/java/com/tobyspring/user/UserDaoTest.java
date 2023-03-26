@@ -1,11 +1,10 @@
 package com.tobyspring.user;
 
 import com.tobyspring.config.DaoFactory;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.sql.SQLException;
@@ -13,9 +12,10 @@ import java.sql.SQLException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-
+@SpringBootTest(classes = DaoFactory.class)
 class UserDaoTest {
 
+    @Autowired
     private UserDao dao;
     private User user1;
     private User user2;
@@ -23,12 +23,13 @@ class UserDaoTest {
 
     @BeforeEach
     public void setUp() {
-        ApplicationContext context = new AnnotationConfigApplicationContext(DaoFactory.class);
-        this.dao = context.getBean("userDao", UserDao.class);
-
         this.user1 = new User("hwany1", "정유환1", "1234");
         this.user2 = new User("hwany2", "정유환2", "1234");
         this.user3 = new User("hwany3", "정유환3", "1234");
+        System.out.println("dao = " + dao);
+        System.out.println("user1 = " + user1);
+        System.out.println("user2 = " + user2);
+        System.out.println("user3 = " + user3);
     }
 
     @Test

@@ -45,10 +45,13 @@ public class JdbcContext {
 
     public void executeSql(final String query) throws SQLException {
         workWithStatementStrategy(
-                c -> {
-                    PreparedStatement ps;
-                    ps = c.prepareStatement(query);
-                    return ps;
+                new StatementStrategy() {
+                    @Override
+                    public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
+                        PreparedStatement ps;
+                        ps = c.prepareStatement(query);
+                        return ps;
+                    }
                 }
         );
     }

@@ -1,5 +1,5 @@
 package com.tobyspring.config;
-import com.tobyspring.user.UserDao;
+import com.tobyspring.user.UserDaoJdbc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
@@ -10,8 +10,8 @@ import javax.sql.DataSource;
 public class DaoFactory {
 
     @Bean
-    public UserDao userDao() {
-        return new UserDao(dataSource());
+    public UserDaoJdbc userDao() {
+        return new UserDaoJdbc(dataSource());
     }
 
     @Bean

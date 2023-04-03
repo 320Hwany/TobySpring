@@ -33,9 +33,9 @@ class UserDaoTest {
 
     @BeforeEach
     public void setUp() {
-        this.user1 = new User("hwany1", "정유환1", "1234");
-        this.user2 = new User("hwany2", "정유환2", "1234");
-        this.user3 = new User("hwany3", "정유환3", "1234");
+        this.user1 = new User("hwany1", "정유환1", "1234", Level.BASIC, 1, 0);
+        this.user2 = new User("hwany2", "정유환2", "1234", Level.SILVER, 55, 10);
+        this.user3 = new User("hwany3", "정유환3", "1234", Level.GOLD, 100, 40);
     }
 
     @Test
@@ -48,12 +48,10 @@ class UserDaoTest {
         assertThat(dao.getCount()).isEqualTo(2);
 
         User userGet1 = dao.get(user1.getId());
-        assertThat(userGet1.getName()).isEqualTo(user1.getName());
-        assertThat(userGet1.getPassword()).isEqualTo(user1.getPassword());
+        checkSameUser(userGet1, user1);
 
         User userGet2 = dao.get(user2.getId());
-        assertThat(userGet2.getName()).isEqualTo(user2.getName());
-        assertThat(userGet2.getPassword()).isEqualTo(user2.getPassword());
+        checkSameUser(userGet2, user2);
     }
 
     @Test
@@ -128,9 +126,33 @@ class UserDaoTest {
         }
     }
 
+    @Test
+    void update() {
+        dao.deleteAll();
+
+        dao.add(user1);
+        dao.add(user2);
+
+        user1.setName("정유환");
+        user1.setPassword("springno6");
+        user1.setLevel(Level.GOLD);
+        user1.setLogin(1000);
+        user1.setRecommend(999);
+
+        dao.update(user1);
+
+        User user1update = dao.get(user1.getId());
+        checkSameUser(user1, user1update);
+        User user2same = dao.get(user2.getId());
+        checkSameUser(user2, user2same);
+    }
+
     private void checkSameUser(User user1, User user2) {
         assertThat(user1.getId()).isEqualTo(user2.getId());
         assertThat(user1.getName()).isEqualTo(user2.getName());
         assertThat(user1.getPassword()).isEqualTo(user2.getPassword());
+        assertThat(user1.getLevel()).isEqualTo(user2.getLevel());
+        assertThat(user1.getLogin()).isEqualTo(user2.getLogin());
+        assertThat(user1.getRecommend()).isEqualTo(user2.getRecommend());
     }
 }

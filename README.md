@@ -5,3 +5,4 @@
 [1장 : 오브젝트와 의존관계](https://320hwany.tistory.com/67)   
 [2장 : 테스트](https://320hwany.tistory.com/68)    
 [3장 : 템플릿](https://320hwany.tistory.com/69)   
+[4장 : 예외](https://320hwany.tistory.com/70)   

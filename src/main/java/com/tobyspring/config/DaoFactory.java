@@ -1,5 +1,7 @@
 package com.tobyspring.config;
 import com.tobyspring.user.UserDaoJdbc;
+import com.tobyspring.user.UserLevelUpgradeCommon;
+import com.tobyspring.user.UserLevelUpgradePolicy;
 import com.tobyspring.user.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +19,12 @@ public class DaoFactory {
 
     @Bean
     public UserService userService() {
-        return new UserService(userDao());
+        return new UserService(userDao(), userLevelUpgradePolicy());
+    }
+
+    @Bean
+    public UserLevelUpgradePolicy userLevelUpgradePolicy() {
+        return new UserLevelUpgradeCommon(userDao());
     }
 
     @Bean

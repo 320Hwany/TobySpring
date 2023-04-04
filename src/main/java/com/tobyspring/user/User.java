@@ -22,6 +22,15 @@ public class User {
     public User() {
     }
 
+    public void upgradeLevel() {
+        Level nextLevel = level.nextLevel();
+        if (nextLevel == null) {
+            throw new IllegalArgumentException(level + "은 업그레이드가 불가능합니다");
+        } else {
+            this.level = nextLevel;
+        }
+    }
+
     public String getId() {
         return id;
     }

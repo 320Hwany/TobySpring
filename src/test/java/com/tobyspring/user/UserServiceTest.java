@@ -20,6 +20,9 @@ class UserServiceTest {
     @Autowired
     UserDao userDao;
 
+    @Autowired
+    UserLevelUpgradePolicy userLevelUpgradePolicy;
+
     List<User> users;
 
     @BeforeEach
@@ -72,6 +75,24 @@ class UserServiceTest {
         assertThat(userWithoutLevelRead.getLevel()).isEqualTo(Level.BASIC);
     }
 
+    @Test
+    public void upgradeAllOrNothing() {
+        TestUserService testUserService = new TestUserService(userDao, userLevelUpgradePolicy, users.get(3).getId());
+
+        userDao.deleteAll();
+        for (User user : users) {
+            userDao.add(user);
+        }
+
+        try {
+            testUserService.upgradeLevels();
+            fail("TestUserServiceException expected");
+        } catch (TestUserServiceException e) {
+        }
+
+        checkLevelUpgraded(users.get(1), false);
+    }
+
     private void checkLevelUpgraded(User user, boolean upgraded) {
         User userUpdate = userDao.get(user.getId());
         if (upgraded) {
@@ -79,5 +100,23 @@ class UserServiceTest {
         } else {
             assertThat(userUpdate.getLevel()).isEqualTo(user.getLevel());
         }
+    }
+
+    static class TestUserService extends UserService {
+        private String id;
+
+        private TestUserService(UserDao userDao, UserLevelUpgradePolicy userLevelUpgradePolicy, String id) {
+            super(userDao, userLevelUpgradePolicy);
+            this.id = id;
+        }
+
+        @Override
+        protected void upgradeLevel(User user) {
+            if(user.getId().equals(this.id)) throw new TestUserServiceException();
+            super.upgradeLevel(user);
+        }
+    }
+
+    static class TestUserServiceException extends RuntimeException {
     }
 }

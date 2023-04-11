@@ -1,7 +1,12 @@
 package com.tobyspring.user;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.sql.DataSource;
@@ -17,18 +22,24 @@ public class UserService {
     public static final int MIN_RECCOMEND_FOR_GOLD = 30;
 
     private final UserLevelUpgradePolicy userLevelUpgradePolicy;
-    private final DataSource dataSource;
 
-    public UserService(UserDao userDao, UserLevelUpgradePolicy userLevelUpgradePolicy, DataSource dataSource) {
+    private final PlatformTransactionManager transactionManager;
+
+    private MailSender mailSender;
+
+    public UserService(UserDao userDao, UserLevelUpgradePolicy userLevelUpgradePolicy,
+                       PlatformTransactionManager transactionManager) {
         this.userDao = userDao;
         this.userLevelUpgradePolicy = userLevelUpgradePolicy;
-        this.dataSource = dataSource;
+        this.transactionManager = transactionManager;
+    }
+
+    public void setMailSender(MailSender mailSender) {
+        this.mailSender = mailSender;
     }
 
     public void upgradeLevels() throws SQLException {
-        TransactionSynchronizationManager.initSynchronization();
-        Connection c = DataSourceUtils.getConnection(dataSource);
-        c.setAutoCommit(false);
+        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
         try {
             List<User> users = userDao.getAll();
@@ -37,19 +48,17 @@ public class UserService {
                     upgradeLevel(user);
                 }
             }
-            c.commit();
+            transactionManager.commit(status);
         } catch (Exception e) {
-            c.rollback();
+            transactionManager.rollback(status);
             throw e;
-        } finally {
-            DataSourceUtils.releaseConnection(c, dataSource);
-            TransactionSynchronizationManager.unbindResource(dataSource);
-            TransactionSynchronizationManager.clearSynchronization();
         }
     }
 
     protected void upgradeLevel(User user) {
-        userLevelUpgradePolicy.upgradeLevel(user);
+        user.upgradeLevel();
+        userDao.update(user);
+        sendUpgradeEmail(user);
     }
 
     private boolean canUpgradeLevel(User user) {
@@ -61,5 +70,15 @@ public class UserService {
             user.setLevel(Level.BASIC);
         }
         userDao.add(user);
+    }
+
+    private void sendUpgradeEmail(User user) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(user.getEmail());
+        mailMessage.setFrom("uesradmin@ksug.org");
+        mailMessage.setSubject("Upgrade 안내");
+        mailMessage.setText("사용자님의 등급이 " + user.getLevel().name());
+
+        mailSender.send(mailMessage);
     }
 }

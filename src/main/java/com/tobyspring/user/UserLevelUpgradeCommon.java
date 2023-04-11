@@ -1,5 +1,8 @@
 package com.tobyspring.user;
 
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+
 import static com.tobyspring.user.UserService.MIN_LOGCOUNT_FOR_SILVER;
 import static com.tobyspring.user.UserService.MIN_RECCOMEND_FOR_GOLD;
 
@@ -26,5 +29,20 @@ public class UserLevelUpgradeCommon implements UserLevelUpgradePolicy {
     public void upgradeLevel(User user) {
         user.upgradeLevel();
         userDao.update(user);
+        sendUpgradeEmail(user);
+    }
+
+    private void sendUpgradeEmail(User user) {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost("mail.server.com");
+
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(user.getEmail());
+        mailMessage.setFrom("uesradmin@ksug.org");
+        mailMessage.setSubject("Upgrade 안내");
+        mailMessage.setText("사용자님의 등급이 " + user.getLevel().name());
+
+        mailSender.send(mailMessage);
+
     }
 }

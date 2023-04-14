@@ -3,8 +3,8 @@ package com.tobyspring.user;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
-import static com.tobyspring.user.UserService.MIN_LOGCOUNT_FOR_SILVER;
-import static com.tobyspring.user.UserService.MIN_RECCOMEND_FOR_GOLD;
+import static com.tobyspring.user.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
+import static com.tobyspring.user.UserServiceImpl.MIN_RECCOMEND_FOR_GOLD;
 
 public class UserLevelUpgradeCommon implements UserLevelUpgradePolicy {
 

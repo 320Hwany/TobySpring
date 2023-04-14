@@ -4,26 +4,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.tobyspring.user.UserService.*;
+import static com.tobyspring.user.UserServiceImpl.*;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 class UserServiceTest {
 
     @Autowired
-    UserService userService;
+    UserServiceImpl userServiceImpl;
 
     @Autowired
     MailSender mailSender;
@@ -67,9 +64,9 @@ class UserServiceTest {
         }
 
         MockMailSender mockMailSender = new MockMailSender();
-        userService.setMailSender(mockMailSender);
+        userServiceImpl.setMailSender(mockMailSender);
 
-        userService.upgradeLevels();
+        userServiceImpl.upgradeLevels();
 
         checkLevelUpgraded(users.get(0), false);
         checkLevelUpgraded(users.get(1), true);
@@ -91,8 +88,8 @@ class UserServiceTest {
         User userWithoutLevel = users.get(0);
         userWithoutLevel.setLevel(null);
 
-        userService.add(userWithLevel);
-        userService.add(userWithoutLevel);
+        userServiceImpl.add(userWithLevel);
+        userServiceImpl.add(userWithoutLevel);
 
         User userWithLevelRead = userDao.get(userWithLevel.getId());
         User userWithoutLevelRead = userDao.get(userWithoutLevel.getId());
@@ -103,9 +100,12 @@ class UserServiceTest {
 
     @Test
     public void upgradeAllOrNothing() throws Exception{
-        TestUserService testUserService =
-                new TestUserService(userDao, userLevelUpgradePolicy, transactionManager, mailSender,
+        TestUserServiceImpl testUserService =
+                new TestUserServiceImpl(userDao, userLevelUpgradePolicy, transactionManager, mailSender,
                         users.get(3).getId());
+
+        UserServiceTx txUserService = new UserServiceTx(testUserService, transactionManager);
+
 
         userDao.deleteAll();
         for (User user : users) {
@@ -113,7 +113,7 @@ class UserServiceTest {
         }
 
         try {
-            testUserService.upgradeLevels();
+            txUserService.upgradeLevels();
             fail("TestUserServiceException expected");
         } catch (TestUserServiceException e) {
         }
@@ -130,13 +130,12 @@ class UserServiceTest {
         }
     }
 
-    static class TestUserService extends UserService {
+    static class TestUserServiceImpl extends UserServiceImpl {
         private String id;
 
-        public TestUserService(UserDao userDao, UserLevelUpgradePolicy userLevelUpgradePolicy,
-                               PlatformTransactionManager transactionManager, MailSender mailSender, String id) {
-            super(userDao, userLevelUpgradePolicy, transactionManager);
-            setMailSender(mailSender);
+        public TestUserServiceImpl(UserDao userDao, UserLevelUpgradePolicy userLevelUpgradePolicy,
+                                   PlatformTransactionManager transactionManager, MailSender mailSender, String id) {
+            super(userDao, userLevelUpgradePolicy, mailSender);
             this.id = id;
         }
 

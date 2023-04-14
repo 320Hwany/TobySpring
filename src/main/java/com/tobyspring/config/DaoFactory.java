@@ -5,10 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.mail.MailSender;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionManager;
 
 import javax.sql.DataSource;
 
@@ -21,8 +18,13 @@ public class DaoFactory {
     }
 
     @Bean
-    public UserService userService() {
-        return new UserService(userDao(), userLevelUpgradePolicy(), transactionManager());
+    public UserServiceTx userService() {
+        return new UserServiceTx(userServiceImpl(), transactionManager());
+    }
+
+    @Bean
+    public UserServiceImpl userServiceImpl() {
+        return new UserServiceImpl(userDao(), userLevelUpgradePolicy(), mailSender());
     }
 
     @Bean

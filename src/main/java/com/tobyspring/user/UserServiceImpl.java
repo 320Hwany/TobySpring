@@ -2,11 +2,7 @@ package com.tobyspring.user;
 
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class UserServiceImpl implements UserService {
@@ -20,14 +16,16 @@ public class UserServiceImpl implements UserService {
 
     private MailSender mailSender;
 
-    public UserServiceImpl(UserDao userDao, UserLevelUpgradePolicy userLevelUpgradePolicy, MailSender mailSender) {
+    public void setUserDao(UserDao userDao) {
         this.userDao = userDao;
-        this.userLevelUpgradePolicy = userLevelUpgradePolicy;
-        this.mailSender = mailSender;
     }
 
     public void setMailSender(MailSender mailSender) {
         this.mailSender = mailSender;
+    }
+
+    public void setUserLevelUpgradePolicy(UserLevelUpgradePolicy userLevelUpgradePolicy) {
+        this.userLevelUpgradePolicy = userLevelUpgradePolicy;
     }
 
     public void upgradeLevels() {
@@ -46,7 +44,13 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean canUpgradeLevel(User user) {
-        return userLevelUpgradePolicy.canUpgradeLevel(user);
+        Level currentLevel = user.getLevel();
+        switch (currentLevel){
+            case BASIC: return (user.getLogin() >= MIN_LOGCOUNT_FOR_SILVER);
+            case SILVER: return (user.getRecommend() >= MIN_RECCOMEND_FOR_GOLD);
+            case GOLD: return false;
+            default: throw new IllegalArgumentException("Unknown Level: " + currentLevel);
+        }
     }
 
     public void add(User user) {
